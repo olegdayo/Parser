@@ -10,10 +10,12 @@ import (
 )
 
 // Ebay.
-func GetEbayTags(ask string) {
+func GetEbayTags(ask string, wg *sync.WaitGroup) ([]string, error) {
 	// The goroutine is done.
 	// Defer statements are executed the last.
 	defer wg.Done()
+	// Answer.
+	var tags []string
 
 	// Creating url using given request and checking its correctness.
 	var url string = fmt.Sprintf("https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313&_nkw=%s&_sacat=0", ask)
@@ -23,7 +25,7 @@ func GetEbayTags(ask string) {
 	res, err := http.Get(url)
 	if err != nil {
 		fmt.Println(1)
-		return
+		return tags, err
 	}
 
 	// Closing request before leaving the function.
@@ -33,14 +35,14 @@ func GetEbayTags(ask string) {
 	// If cannot work with res.
 	if res.StatusCode != 200 {
 		fmt.Println(2)
-		return
+		return tags, err
 	}
 
 	// Creating page source .html document and checking if it can be created.
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		fmt.Println(3)
-		return
+		return tags, err
 	}
 
 	// Searching all needed div tags.
@@ -48,19 +50,21 @@ func GetEbayTags(ask string) {
 		// Searching all needed span tags inside the div tags.
 		s.Find("span[class=BOLD]").Each(func(i int, ss *goquery.Selection) {
 			// Logging.
-			fmt.Printf("%s ", ss.Text())
+			tags = append(tags, ss.Text())
 		})
 	})
 
-	// Just a new line.
-	fmt.Println("")
+	// Everything is ok.
+	return tags, nil
 }
 
 // Wildberries.
-func GetWildberriesTags(ask string) {
+func GetWildberriesTags(ask string, wg *sync.WaitGroup) ([]string, error) {
 	// The goroutine is done.
 	// Defer statements are executed the last.
 	defer wg.Done()
+	// Answer.
+	var tags []string
 
 	// Creating url using given request and checking its correctness.
 	var url string = fmt.Sprintf("https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313&_nkw=%s&_sacat=0", ask)
@@ -68,28 +72,44 @@ func GetWildberriesTags(ask string) {
 
 	// TODO...
 
-	// Just a new line.
-	fmt.Println("")
+	// Everything is ok.
+	return tags, nil
 }
 
-func GetTags(ask string) {
+func GetTags(ask string, wg *sync.WaitGroup) ([]string, []string) {
 	// Giving number of goroutines which we are going to wait.
 	wg.Add(2)
+	var ebayTags []string
+	var ebayError error
+	var wildberriesTags []string
+	var wildberriesError error
 
 	// Running both goroutines.
-	go GetEbayTags(ask)
-	go GetWildberriesTags(ask)
+	go func() {
+		ebayTags, ebayError = GetEbayTags(ask, wg)
+	}()
+	go func() {
+		wildberriesTags, wildberriesError = GetWildberriesTags(ask, wg)
+	}()
 
 	// Waiter waits at this part of code.
 	wg.Wait()
-}
 
-// Goroutines waiter.
-var wg sync.WaitGroup
+	if ebayError != nil {
+		fmt.Println("Something went wrong in Ebay parsing!")
+	}
+	if wildberriesError != nil {
+		fmt.Println("Something went wrong in Wildberries parsing!")
+	}
+
+	return ebayTags, wildberriesTags
+}
 
 func main() {
 	// Setting timer.
 	start := time.Now()
+	// Goroutines waiter.
+	var wg sync.WaitGroup
 
 	// If string is given, using it, otherwise set "anime", because anime rules.
 	var ask string
@@ -100,7 +120,9 @@ func main() {
 	}
 
 	// Getting all tags.
-	GetTags(ask)
+	ebay, wildberries := GetTags(ask, &wg)
+	fmt.Println(ebay)
+	fmt.Println(wildberries)
 
 	// Printing the total time elapsed.
 	fmt.Printf("%v\n", time.Since(start))
