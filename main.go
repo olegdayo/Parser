@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -105,7 +106,16 @@ func GetTags(ask string, wg *sync.WaitGroup) ([]string, []string) {
 	return ebayTags, wildberriesTags
 }
 
+func min(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func main() {
+	// Setting maximum number of threads we can use.
+	runtime.GOMAXPROCS(min(runtime.NumCPU(), 2))
 	// Setting timer.
 	start := time.Now()
 	// Goroutines waiter.
