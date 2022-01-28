@@ -114,7 +114,7 @@ func min(a int, b int) int {
 }
 
 func main() {
-	// Setting maximum number of threads we can use.
+	// Setting maximum number of threads we need to use.
 	runtime.GOMAXPROCS(min(runtime.NumCPU(), 2))
 	// Setting timer.
 	start := time.Now()
