@@ -22,7 +22,7 @@ def get_tags_ebay(ask: str) -> list:
 
 def get_tags_wildberries(ask: str) -> list:
     # Creating url using given request.
-    url = f'https://www.wildberries.ru/catalog/0/search.aspx?sort=popular&search={ask}/recommendation/catalog?type=maybeyouinterest'
+    url = f'{ask}'
     # Creating request.
     response = requests.get(url)
     # Creating page source .html document.

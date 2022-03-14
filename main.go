@@ -68,7 +68,7 @@ func GetWildberriesTags(ask string, wg *sync.WaitGroup) ([]string, error) {
 	var tags []string
 
 	// Creating url using given request and checking its correctness.
-	var url string = fmt.Sprintf("https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313&_nkw=%s&_sacat=0", ask)
+	var url string = fmt.Sprintf("%s", ask)
 	fmt.Println(url)
 
 	// TODO...
